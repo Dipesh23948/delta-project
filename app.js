@@ -1,4 +1,4 @@
-if (process.env.NODE_ENV != "production") {
+if (process.env.NODE_ENV !== "production") {
     require("dotenv").config();
 }
 
@@ -20,14 +20,20 @@ const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
-const dbUrl = process.env.ATLASDB_URL;
+// ✅ FIXED: Use correct env variable name
+const dbUrl = process.env.DB_URL;
 
-// ✅ DB Connection
+// ✅ DB Connection (robust)
 async function main() {
-    await mongoose.connect(dbUrl);
-    console.log("connected to DB");
+    try {
+        await mongoose.connect(dbUrl);
+        console.log("✅ Connected to DB");
+    } catch (err) {
+        console.error("❌ DB Connection Error:", err);
+        process.exit(1); // stop app if DB fails
+    }
 }
-main().catch(err => console.log(err));
+main();
 
 // ✅ View setup
 app.set("view engine", "ejs");
@@ -36,33 +42,33 @@ app.engine("ejs", ejsMate);
 
 // ✅ Middleware
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); 
+app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
-// ✅ Mongo Store (FIXED)
+// ✅ Mongo Session Store (safe)
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     crypto: {
-        secret: process.env.SECRET || "mysupersecretcode"
+        secret: process.env.SECRET || "fallbacksecret",
     },
     touchAfter: 24 * 3600,
 });
 
 store.on("error", (err) => {
-    console.log("ERROR in MONGO SESSION STORE", err);
+    console.log("❌ ERROR in MONGO SESSION STORE:", err);
 });
 
-// ✅ Session (FIXED POSITION)
+// ✅ Session Config
 const sessionOptions = {
     store,
-    secret: process.env.SECRET || "mysupersecretcode", 
+    secret: process.env.SECRET || "fallbacksecret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
         expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true
+        httpOnly: true,
     },
 };
 
@@ -77,7 +83,7 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// ✅ Flash + Global User
+// ✅ Flash + Global User Middleware
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
@@ -106,7 +112,9 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render("error.ejs", { message });
 });
 
-// ✅ Server
-app.listen(8080, () => {
-    console.log("server is listening to port 8080");
+//  Use Render PORT
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
