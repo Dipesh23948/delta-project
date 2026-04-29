@@ -1,0 +1,191 @@
+<% layout("layouts/boilerplate") %>
+
+<style>
+    #filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.7rem;
+    }
+
+    .filter {
+        text-align: center;
+        margin-right: 2rem;
+        margin-top: 2rem;
+        opacity: 0.7;
+        text-decoration: none;
+        color: black;
+    }
+
+    .filter:hover {
+        opacity: 1;
+        cursor: pointer;
+    }
+
+    .filter.active {
+        opacity: 1;
+        border-bottom: 2px solid black;
+    }
+
+    .filter p {
+        font-size: 0.8rem;
+    }
+
+    .tax-info {
+        display: none;
+    }
+
+    .tax-toggle {
+        border: 1px solid black;
+        border-radius: 1rem;
+        height: 3.2rem;
+        padding: 1rem;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+    }
+</style>
+
+<!-- FILTERS -->
+<div id="filters">
+
+    <a href="/listings?category=trending" class="filter" data-category="trending">
+        <div><i class="fa-solid fa-fire"></i></div>
+        <p>Trending</p>
+    </a>
+
+    <a href="/listings?category=rooms" class="filter" data-category="rooms">
+        <div><i class="fa-solid fa-bed"></i></div>
+        <p>Rooms</p>
+    </a>
+
+    <a href="/listings?category=iconic-cities" class="filter" data-category="iconic-cities">
+        <div><i class="fa-solid fa-mountain-city"></i></div>
+        <p>Iconic Cities</p>
+    </a>
+
+    <a href="/listings?category=mountains" class="filter" data-category="mountains">
+        <div><i class="fa-solid fa-mountain"></i></div>
+        <p>Mountains</p>
+    </a>
+
+    <a href="/listings?category=castles" class="filter" data-category="castles">
+        <div><i class="fa-brands fa-fort-awesome"></i></div>
+        <p>Castles</p>
+    </a>
+
+    <a href="/listings?category=amazing-pools" class="filter" data-category="amazing-pools">
+        <div><i class="fa-solid fa-person-swimming"></i></div>
+        <p>Amazing Pools</p>
+    </a>
+
+    <a href="/listings?category=camping" class="filter" data-category="camping">
+        <div><i class="fa-solid fa-campground"></i></div>
+        <p>Camping</p>
+    </a>
+
+    <a href="/listings?category=farms" class="filter" data-category="farms">
+        <div><i class="fa-solid fa-cow"></i></div>
+        <p>Farms</p>
+    </a>
+
+    <a href="/listings?category=arctic" class="filter" data-category="arctic">
+        <div><i class="fa-solid fa-snowflake"></i></div>
+        <p>Arctic</p>
+    </a>
+
+    <div class="tax-toggle">
+        <div class="form-check-reverse form-switch">
+            <input class="form-check-input" type="checkbox" id="switchCheckDefault">
+            <label class="form-check-label" for="switchCheckDefault">
+                Display Total after taxes
+            </label>
+        </div>
+    </div>
+
+</div>
+
+<!-- LISTINGS -->
+<div id="listing-container" class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+
+<% for (let listing of allListings) { %>
+
+    <div class="col">
+        <a href="/listings/<%= listing._id %>" class="listing-links">
+            <div class="card listing-card h-100">
+                <img src="<%= listing.image.url %>" class="card-img-top" style="height: 20rem; object-fit: cover;">
+
+                <div class="card-body">
+                    <p class="card-text">
+                        <b><%= listing.title %></b>
+                    </p>
+                    ₹ <%= listing.price.toLocaleString("en-IN") %> /night
+                    <i class="tax-info"> &nbsp; +18% GST</i>
+                </div>
+            </div>
+        </a>
+    </div>
+
+<% } %>
+
+</div>
+
+<!-- TAX TOGGLE -->
+<script>
+    let taxSwitch = document.getElementById("switchCheckDefault");
+
+    taxSwitch.addEventListener("click", () => {
+        let taxInfo = document.getElementsByClassName("tax-info");
+
+        for (let info of taxInfo) {
+            info.style.display = info.style.display === "inline" ? "none" : "inline";
+        }
+    });
+</script>
+
+<!-- AJAX FILTER -->
+<script>
+    const filters = document.querySelectorAll(".filter");
+
+    filters.forEach(filter => {
+        filter.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const category = filter.dataset.category;
+
+            const res = await fetch(`/listings/filter?category=${category}`);
+            const data = await res.json();
+
+            const container = document.getElementById("listing-container");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<h3>No listings found</h3>";
+                return;
+            }
+
+            data.forEach(listing => {
+                const card = `
+                <div class="col">
+                    <a href="/listings/${listing._id}" class="listing-links">
+                        <div class="card listing-card h-100">
+                            <img src="${listing.image.url}" class="card-img-top" style="height: 20rem; object-fit: cover;">
+                            <div class="card-body">
+                                <p class="card-text">
+                                    <b>${listing.title}</b>
+                                </p>
+                                ₹ ${listing.price.toLocaleString("en-IN")} /night
+                                <i class="tax-info"> &nbsp; +18% GST</i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                `;
+                container.innerHTML += card;
+            });
+
+            filters.forEach(f => f.classList.remove("active"));
+            filter.classList.add("active");
+        });
+    });
+</script>

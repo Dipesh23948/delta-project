@@ -1,0 +1,76 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-3">
+  <div class="row justify-content-center">
+    <div class="col-md-7">
+
+      <h5 class="text-center mb-3">Edit Listing</h5>
+
+      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" enctype="multipart/form-data">
+
+        <div class="row g-2">
+
+          <!-- Title -->
+          <div class="col-md-6">
+            <label class="form-label small">Title</label>
+            <input name="listing[title]" value="<%= listing.title %>" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- Price -->
+          <div class="col-md-6">
+            <label class="form-label small">Price</label>
+            <input type="number" name="listing[price]" value="<%= listing.price %>" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- Country -->
+          <div class="col-md-6">
+            <label class="form-label small">Country</label>
+            <input name="listing[country]" value="<%= listing.country %>" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-6">
+            <label class="form-label small">Location</label>
+            <input name="listing[location]" value="<%= listing.location %>" class="form-control form-control-sm" required>
+          </div>
+
+          <!-- Category -->
+          <div class="col-md-6">
+            <label class="form-label small">Category</label>
+            <select name="listing[category]" class="form-select form-select-sm" required>
+              <option value="">Select</option>
+              <option value="trending" <%= listing.category==="trending"?"selected":"" %>>Trending</option>
+              <option value="rooms" <%= listing.category==="rooms"?"selected":"" %>>Rooms</option>
+              <option value="iconic-cities" <%= listing.category==="iconic-cities"?"selected":"" %>>Iconic Cities</option>
+              <option value="mountains" <%= listing.category==="mountains"?"selected":"" %>>Mountains</option>
+              <option value="castles" <%= listing.category==="castles"?"selected":"" %>>Castles</option>
+              <option value="amazing-pools" <%= listing.category==="amazing-pools"?"selected":"" %>>Amazing Pools</option>
+              <option value="camping" <%= listing.category==="camping"?"selected":"" %>>Camping</option>
+              <option value="farms" <%= listing.category==="farms"?"selected":"" %>>Farms</option>
+              <option value="arctic" <%= listing.category==="arctic"?"selected":"" %>>Arctic</option>
+            </select>
+          </div>
+
+          <!-- Image -->
+          <div class="col-md-6">
+            <label class="form-label small">Image</label>
+            <input type="file" name="listing[image]" class="form-control form-control-sm">
+          </div>
+
+          <!-- Description (Full Width but small height) -->
+          <div class="col-12">
+            <label class="form-label small">Description</label>
+            <textarea name="listing[description]" rows="2" class="form-control form-control-sm" required><%= listing.description %></textarea>
+          </div>
+
+          <!-- Button -->
+          <div class="col-12 text-center mt-2">
+            <button class="btn btn-dark btn-sm px-4">Update</button>
+          </div>
+
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
